@@ -7,6 +7,36 @@ import rag
 
 
 class RoutingTests(unittest.TestCase):
+    @patch('web_search.web_explanation')
+    @patch('rag.analyze_document')
+    @patch('rag.retrieve')
+    @patch('rag.understand_request')
+    def test_off_topic_request_stops_before_document_and_web_calls(self, route, retrieve, analyze, web):
+        route.return_value = {'route':'reject', 'request':'Ricetta lasagne', 'clarification':'', 'web':True}
+        chunks = [{'text':'Reti neurali e distillazione dei modelli', 'page':1}]
+        result = rag.answer_request('Cerca la ricetta delle lasagne sul web',
+            [{'title':'Intelligenza artificiale'}], None, chunks, 'fake', 'model', {},
+            context={'request':'Spiega le reti neurali','answer':'Contesto AI'}, web_enabled=True)
+        self.assertTrue(result['rejected'])
+        self.assertEqual(result['text'], rag.OFF_TOPIC)
+        self.assertEqual(result['pages'], [])
+        retrieve.assert_not_called()
+        analyze.assert_not_called()
+        web.assert_not_called()
+        self.assertEqual(route.call_args.kwargs['chunks'], chunks)
+
+    @patch('rag.get_client')
+    def test_scope_classifier_gets_document_evidence_and_can_reject(self, client):
+        decision = {'route':'reject', 'request':'Ricetta lasagne', 'clarification':'', 'web':False}
+        client.return_value.models.generate_content.return_value = SimpleNamespace(text=json.dumps(decision))
+        chunks = [{'text':f'Contenuto {i}', 'page':i+1} for i in range(30)]
+        result = rag.understand_request('Ricetta lasagne', [{'title':'AI'}], 'fake', 'model', chunks=chunks)
+        self.assertEqual(result, decision)
+        sent = json.loads(client.return_value.models.generate_content.call_args.kwargs['contents'])
+        self.assertEqual(len(sent['document_excerpt']), 12)
+        self.assertEqual(sent['document_excerpt'][0]['page'], 1)
+        self.assertEqual(sent['document_excerpt'][-1]['page'], 30)
+
     @patch('rag.get_client')
     def test_request_is_interpreted_with_clarification_context(self, client):
         result = {'route': 'search', 'request': 'Spiega il gradiente', 'clarification': ''}
