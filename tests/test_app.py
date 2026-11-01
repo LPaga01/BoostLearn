@@ -125,6 +125,20 @@ class AppTests(unittest.TestCase):
             self.assertEqual(answer.call_args.args[-1]['request'], 'Spiegamelo')
             self.assertNotIn('pending_request', self.app.session_state)
 
+    def test_rejected_request_preserves_previous_study_context(self):
+        self.prepare_pdf()
+        previous = {'request':'Spiega la valutazione', 'answer':'Risposta pertinente'}
+        self.app.session_state['request_context'] = previous
+        with patch('rag.understand_request', return_value={
+            'route':'reject', 'request':'Ricetta lasagne', 'clarification':'', 'web':False}), \
+             patch('web_search.web_explanation') as web:
+            self.app.text_input[0].set_value('Ricetta lasagne')
+            self.click('Rispondi')
+        self.assertEqual(len(self.app.exception), 0)
+        self.assertTrue(self.app.session_state['result']['rejected'])
+        self.assertEqual(self.app.session_state['request_context'], previous)
+        web.assert_not_called()
+
 
 if __name__ == '__main__':
     unittest.main()

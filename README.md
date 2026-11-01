@@ -42,6 +42,8 @@ Per i PDF brevi viene usato il testo completo. Per quelli lunghi vengono recuper
 
 Quando servono informazioni esterne, Gemini formula una query mirata e Tavily restituisce fino a cinque risultati con estratti e link. Gemini usa questi estratti per preparare l'approfondimento. La risposta distingue **Dal PDF**, con i riferimenti alle pagine, da **Approfondimento dal web**, con citazioni come `[W1]` e collegamenti alle fonti. Non vengono più mostrati i blocchi di testo nella sezione "Passaggi utilizzati": restano le pagine citate e le fonti web.
 
+Prima di rispondere, il sistema controlla che la richiesta sia coerente con gli argomenti del PDF, usando titoli ed estratti del documento. Le domande chiaramente fuori tema vengono rifiutate prima della ricerca: per esempio, una ricetta non viene cercata se la dispensa parla di AI. Restano validi approfondimenti, prerequisiti, esempi e confronti collegati al materiale. Se il collegamento non è chiaro, viene chiesto un chiarimento. Il controllo è affidato al modello, mentre il codice impedisce la chiamata a Tavily quando la richiesta viene classificata come estranea.
+
 La ricerca non parte a ogni domanda. Per chiedere un approfondimento si può scrivere "cerca sul web e confronta questo concetto con..."; per restare sulla dispensa, "usa solo il PDF". La scelta viene interpretata dal modello. Se il web non è disponibile o gli estratti non bastano, rimane la risposta del documento con un avviso.
 
 Il codice controlla che le citazioni rimandino alle fonti recuperate. Questo non garantisce da solo la correttezza del contenuto: gli estratti non sono sempre pagine complete e le fonti vanno comunque controllate.

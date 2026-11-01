@@ -125,7 +125,8 @@ with material_tab:
                         st.session_state.pending_request = answer
                         st.rerun()
                     st.session_state.pop("pending_request", None)
-                    st.session_state.request_context = {"request": answer.get("request", question), "answer": answer["text"][:2000]}
+                    if not answer.get('rejected'):
+                        st.session_state.request_context = {"request": answer.get("request", question), "answer": answer["text"][:2000]}
                     st.session_state.result = {**answer, "passages": passages, "question": question, "summarized": summarized,
                                                "seconds": time.perf_counter() - started}
             except Exception as error:
