@@ -22,8 +22,6 @@ Gemini gestisce le risposte, gli embedding e i quiz. Tavily serve solo per cerca
 
 Se `GEMINI_REVIEW_MODEL` rimane vuoto, il revisore dei quiz usa lo stesso modello dell'autore. I nomi dei modelli sono configurabili perché la disponibilità dipende dal progetto Google AI Studio. Dopo aver cambiato il `.env` bisogna fermare e riavviare l'app. Il file contiene chiavi private e non va condiviso: per la consegna c'è `.env.example`.
 
-Per chiudere BoostLearn si usa **Ctrl+C** nel terminale.
-
 In alternativa, dalla cartella `BoostLearn`:
 
 ```powershell
@@ -76,8 +74,6 @@ Il PDF e l'indice Chroma restano in memoria. SQLite salva argomenti, quiz, tenta
 
 Gemini riceve il testo necessario alle elaborazioni; Tavily riceve la query di ricerca. Gli estratti web vengono poi inviati a Gemini. La cache web conserva in memoria fino a 64 ricerche e le riutilizza fino al cambio d'ora, per un massimo di circa un'ora.
 
-Al 1 novembre 2026 Tavily offre 1.000 crediti gratuiti al mese senza carta; la ricerca basic usata dall'app costa un credito. Per rimanere nel piano gratuito non bisogna attivare piani a pagamento o pay-as-you-go. I limiti possono cambiare: [condizioni Tavily](https://docs.tavily.com/documentation/api-credits). Le chiamate Gemini seguono separatamente le quote del proprio account. Non viene usata la ricerca Google integrata in Gemini e la vecchia variabile `GEMINI_WEB_MODEL` non serve più.
-
 ## Verifiche e limiti
 
 I test si eseguono dalla cartella `BoostLearn`:
@@ -85,7 +81,3 @@ I test si eseguono dalla cartella `BoostLearn`:
 ```powershell
 .\.venv\Scripts\python.exe -m unittest discover -s tests -v
 ```
-
-L'ultima esecuzione conta **76 test superati**. Le chiamate esterne nei test sono simulate; servono a controllare il comportamento del codice, non a misurare la qualità didattica delle risposte. La ricerca Tavily è stata provata anche nell'app.
-
-Restano alcuni limiti: un PDF alla volta, niente OCR, possibili problemi con tabelle o formule e una mappa degli argomenti ricavata da un campione del documento. La revisione AI riduce alcuni errori ma non li elimina. Per valutare davvero il progetto servono prove sui documenti, controllando fonti, quiz e utilità delle spiegazioni.
