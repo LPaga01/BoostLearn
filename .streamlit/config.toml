@@ -1,0 +1,14 @@
+[server]
+maxUploadSize = 10
+
+[client]
+toolbarMode = "auto"
+
+[theme]
+primaryColor = "#5B54E8"
+backgroundColor = "#FAFAFE"
+secondaryBackgroundColor = "#EEEDF9"
+textColor = "#202238"
+font = "sans serif"
+baseFontSize = 17
+headingFontSizes = ["2.9rem", "2.3rem", "1.8rem"]
