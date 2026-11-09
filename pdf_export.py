@@ -7,6 +7,7 @@ from xml.sax.saxutils import escape
 from text_format import readable_text
 
 
+# Crea in memoria il PDF con richiesta, risposta e riferimenti, pronto da scaricare.
 def answer_pdf(result, document_name):
     import reportlab
     from reportlab.lib import colors
@@ -51,12 +52,20 @@ def answer_pdf(result, document_name):
         story.append(Paragraph(text, heading if is_heading else body))
     pages = result.get('pages', [])
     if pages:
+        # Con piu PDF il riferimento include sempre il nome della fonte.
+        references = result.get('source_labels') or ', '.join(map(str, pages))
         story.extend([Paragraph('Pagine di riferimento', heading),
-                      Paragraph(', '.join(map(str, pages)) + ' (numerazione del PDF originale)', body)])
+                      Paragraph(escape(references) + ' (numerazione del PDF originale)', body)])
     if result.get('summarized'):
         story.append(Paragraph('Analisi basata su sintesi intermedie: alcuni dettagli possono andare persi.', small))
+    # Mantiene verificabili anche le fonti web della conversazione ripristinata.
+    if result.get('web_sources'):
+        story.append(Paragraph('Fonti web', heading))
+        for source in result['web_sources']:
+            story.append(Paragraph(escape(f"{source['id']}: {source['title']} - {source['url']}"), small))
     story.append(Paragraph('Risposta generata con AI. Verifica le informazioni nelle fonti originali.', small))
 
+    # Disegna il nome dell'app e il numero di pagina in fondo al PDF.
     def footer(canvas, doc):
         canvas.setFont('BLText', 8)
         canvas.setFillColor(colors.HexColor('#60687B'))

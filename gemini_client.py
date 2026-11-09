@@ -1,4 +1,4 @@
-"""Client Gemini condiviso tra RAG e agenti, con errori senza credenziali."""
+
 
 import re
 from functools import lru_cache
@@ -8,6 +8,7 @@ DEFAULT_EMBEDDING_MODEL = "gemini-embedding-001"
 
 
 @lru_cache(maxsize=4)
+# Controlla la chiave e crea il client Gemini, riutilizzandolo nelle chiamate successive.
 def get_client(api_key):
     if not api_key.strip():
         raise ValueError("Inserisci GEMINI_API_KEY nel file .env e riavvia l'app.")
@@ -20,6 +21,7 @@ def get_client(api_key):
     })
 
 
+# Nasconde la chiave e traduce gli errori Gemini in messaggi comprensibili.
 def safe_ai_error(error, api_key):
     message = str(error)
     if api_key:

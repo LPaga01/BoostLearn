@@ -11,12 +11,14 @@ Non cambiare il significato matematico; se la fonte e' illeggibile, dichiaralo.
 """
 
 
+# Rende leggibili il Markdown esterno e le formule semplici senza cambiare il testo normale.
 def readable_text(text):
     # Rimuovi solo un involucro Markdown esplicito, non i blocchi di codice interni.
     wrapped = re.fullmatch(r'\s*```(?:markdown|md|text|plaintext)\s*\n(.*?)\n```\s*', text, re.DOTALL)
     if wrapped:
         text = wrapped.group(1)
 
+    # Trasforma una formula riconosciuta in notazione testuale, lasciando visibili i comandi sconosciuti.
     def formula(match):
         value = next(group for group in match.groups() if group is not None)
         commands = {'rightarrow': '->', 'leftarrow': '<-', 'Rightarrow': '=>',

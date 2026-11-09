@@ -30,6 +30,16 @@ class PdfExportTests(unittest.TestCase):
         self.assertGreater(len(reader.pages), 1)
         self.assertIn('Punto 99', reader.pages[-1].extract_text())
 
+    def test_multiple_document_labels_and_saved_web_sources_are_exported(self):
+        from pypdf import PdfReader
+        result = {'question': 'Confronta', 'text': 'Risposta [W1]', 'pages': [1, 4],
+                  'source_labels': 'a.pdf (pagina 1); b.pdf (pagina 1)',
+                  'web_sources': [{'id': 'W1', 'title': 'Fonte', 'url': 'https://example.org/fonte'}]}
+        reader = PdfReader(BytesIO(answer_pdf(result, 'Biologia')))
+        text = ''.join(page.extract_text() for page in reader.pages)
+        for expected in ('a.pdf (pagina 1)', 'b.pdf (pagina 1)', 'https://example.org/fonte'):
+            self.assertIn(expected, text)
+
     def test_formula_and_markdown_are_readable(self):
         from pypdf import PdfReader
         result = {'question':'Spiega RSA', 'text': '```markdown\n### RSA\n- **Formula:** $c = p^E \\bmod N$\n- *Ordine:* $A \\rightarrow B$\n```', 'pages':[8]}

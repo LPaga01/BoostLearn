@@ -14,6 +14,7 @@ from text_format import FORMATTING_INSTRUCTIONS, readable_text
 
 
 @lru_cache(maxsize=64)
+# Cerca con Tavily, filtra le fonti e riusa i risultati della stessa query nella stessa ora.
 def _search_cached(query, search_key, hour):
     request = Request('https://api.tavily.com/search',
         data=json.dumps({'query': query[:400], 'search_depth': 'basic',
@@ -58,6 +59,7 @@ def _search_cached(query, search_key, hour):
     return tuple(sources)
 
 
+# Controlla la chiave Tavily e recupera le fonti dalla ricerca o dalla cache.
 def search_sources(question):
     key = os.getenv('TAVILY_API_KEY', '').strip()
     if not key:
@@ -66,11 +68,11 @@ def search_sources(question):
     return list(_search_cached(question.strip()[:400], key, int(time.time() // 3600)))
 
 
+# Prepara la query, cerca con Tavily e usa Gemini per spiegare gli estratti con citazioni controllate.
 def web_explanation(question, document_answer, api_key, model):
     if not os.getenv('TAVILY_API_KEY', '').strip():
         raise ValueError('Inserisci TAVILY_API_KEY nel file .env e riavvia BoostLearn.')
     # Il modello principale continua a funzionare; la precedente impostazione
-    # GEMINI_WEB_MODEL non viene usata dal nuovo percorso Tavily.
     try:
         query_response = get_client(api_key).models.generate_content(model=model,
             contents=json.dumps({'richiesta': question, 'contesto_pdf': document_answer[:6000]}, ensure_ascii=False),

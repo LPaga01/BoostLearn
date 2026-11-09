@@ -1,6 +1,6 @@
 # BoostLearn
 
-BoostLearn è un assistente allo studio che parte da una dispensa in PDF. L'idea è avere nello stesso posto le spiegazioni del materiale, qualche domanda per mettersi alla prova e un ripasso degli argomenti su cui si fanno più errori.
+BoostLearn è un assistente allo studio che organizza piu dispense PDF per argomento e per utente. L'idea è avere nello stesso posto le spiegazioni del materiale, qualche domanda per mettersi alla prova e un ripasso degli argomenti su cui si fanno più errori.
 
 Per le domande ho aggiunto anche la ricerca web: serve per approfondire, confrontare concetti e trovare informazioni che non sono nel documento. I quiz e il ripasso, invece, rimangono basati solo sul PDF caricato.
 
@@ -32,11 +32,15 @@ py -3.12 -m venv .venv
 
 ## Come si usa
 
-Si carica un PDF con testo selezionabile e si preme **Prepara il documento**. Il limite è di 10 MB e 100 pagine. Le scansioni non sono supportate.
+Si crea un utente con **Crea utente**, oppure si entra con **Accedi** usando il solo username. Il nome è univoco anche ignorando maiuscole, spazi esterni e varianti Unicode. Non è prevista una password: chi conosce lo username può aprire quel profilo.
+
+Nella barra laterale si crea o seleziona un **Argomento**, poi si caricano uno o più PDF e si preme **Prepara i documenti**. Il limite di 10 MB, 100 pagine e 1.000 blocchi vale per ogni PDF; le scansioni non sono supportate. Si possono aggiungere dispense in seguito: i file identici nello stesso argomento vengono ignorati. Se un file non è valido, gli altri rimangono salvati.
+
+Ogni PDF ha il proprio indice persistente. I metadati `user_id`, `topic_id` (argomento contenitore), `document_id`, `document_name`, `page` (riferimento interno) e `original_page` permettono di raggruppare e filtrare le fonti. L'interfaccia e l'esportazione mostrano file e pagina originale.
 
 ### Il mio materiale
 
-C'è un unico campo in cui fare domande, chiedere spiegazioni, riassunti o schemi. Il sistema sceglie il percorso in base alla richiesta; se non capisce a cosa ci si riferisce, chiede un chiarimento nello stesso campo. Conserva l'ultima richiesta e parte dell'ultima risposta, così si può scrivere, per esempio, "spiegalo più semplice". Non è una cronologia completa.
+C'è un unico campo in cui fare domande, chiedere spiegazioni, riassunti o schemi. Il sistema sceglie il percorso in base alla richiesta; se non capisce a cosa ci si riferisce, chiede un chiarimento nello stesso campo. Le conversazioni si salvano automaticamente in SQLite. **Nuova conversazione** apre una chat distinta; il selettore **Conversazione** permette di riprenderne una precedente anche dopo la chiusura dell'app. La cronologia completa resta consultabile; il modello riceve fino a 16.000 caratteri di messaggi recenti e l'ultimo contesto utile. Si ripristinano anche chiarimenti in corso e ultima risposta con fonti ed esportazione.
 
 Per i PDF brevi viene usato il testo completo. Per quelli lunghi vengono recuperati i passaggi pertinenti oppure preparate sintesi delle varie parti, riutilizzate durante la sessione. Quando usa le sintesi lo segnala, perché alcuni dettagli possono andare persi.
 
@@ -72,7 +76,11 @@ Qui compaiono i risultati per argomento. Quelli sotto il 70% nelle ultime dieci 
 - `gemini_client.py`: client condiviso e gestione degli errori.
 - `pdf_export.py` e `text_format.py`: esportazione e formattazione delle risposte.
 
-Il PDF e l'indice Chroma restano in memoria. SQLite salva argomenti, quiz, tentativi e rapporti dei controlli in `data/progressi.sqlite3`. Ricaricando lo stesso identico PDF si ritrova lo storico. L'app usa un solo profilo locale.
+SQLite salva utenti, argomenti, PDF originali, testo estratto, sottoargomenti, conversazioni e progressi in `data/progressi.sqlite3`. Chroma salva una collezione per PDF in `data/indexes/`; gli indici gia pronti vengono riaperti senza ricalcolare gli embedding. Se un indice manca o e incompleto, viene ricostruito dal testo salvato. Il modello di embedding fa parte della chiave dell'indice.
+
+Le conversazioni appartengono a un argomento; quiz e progressi sono condivisi tra le conversazioni dello stesso argomento dello stesso utente. Cambiando utente o argomento si svuota lo stato temporaneo, senza cancellare il materiale. Le sintesi intermedie e un quiz non ancora consegnato restano temporanei.
+
+La struttura dei moduli resta invariata: `progressi.py` gestisce anche biblioteca e chat; `rag.py` gestisce indici persistenti e ricerca filtrata tra i PDF. Le tabelle vengono aggiunte automaticamente al database esistente; i vecchi progressi del profilo unico non vengono assegnati arbitrariamente a un nuovo utente.
 
 Gemini riceve il testo necessario alle elaborazioni; Tavily riceve la query di ricerca. Gli estratti web vengono poi inviati a Gemini. La cache web conserva in memoria fino a 64 ricerche e le riutilizza fino al cambio d'ora, per un massimo di circa un'ora.
 
